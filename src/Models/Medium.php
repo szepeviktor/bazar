@@ -73,7 +73,7 @@ class Medium extends Model
             'width' => $width ?? null,
             'height' => $height ?? null,
             'disk' => config('bazar.media.disk'),
-            'size' => round(filesize($path) / 1024),
+            'size' => round(filesize($path) / 2**10),
             'name' => pathinfo($name, PATHINFO_FILENAME),
         ]);
     }

@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Response;
 
 class WidgetsController extends Controller
 {
+    public const ORDERS_PER_WIDGET = 3;
+
     /**
      * Show the activities.
      *
@@ -19,8 +21,8 @@ class WidgetsController extends Controller
      */
     public function activities(): JsonResponse
     {
-        $orders = Cache::remember('bazar.activities', 3600, function () {
-            return Order::latest()->take(3)->get()->map(function ($order) {
+        $orders = Cache::remember('bazar.activities', Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR, function () {
+            return Order::latest()->take(self::ORDERS_PER_WIDGET)->get()->map(function ($order) {
                 return [
                     'icon' => 'shop-basket',
                     'url' => route('bazar.orders.show', $order),
@@ -42,7 +44,7 @@ class WidgetsController extends Controller
      */
     public function metrics(): JsonResponse
     {
-        $metrics = Cache::remember('bazar.metrics', 3600, function () {
+        $metrics = Cache::remember('bazar.metrics', Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR, function () {
             return [
                 'orders' => Order::count(),
                 'products' => Product::count(),
@@ -60,13 +62,13 @@ class WidgetsController extends Controller
      */
     public function sales(): JsonResponse
     {
-        $sales = Cache::remember('bazar.sales', 3600, function () {
-            $days = array_reverse(array_reduce(array_fill(0, 7, null), function ($days, $day) {
+        $sales = Cache::remember('bazar.sales', Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR, function () {
+            $days = array_reverse(array_reduce(array_fill(0, Carbon::DAYS_PER_WEEK, null), function ($days, $day) {
                 return array_merge($days, [Carbon::now()->subDays(count($days))->format('m-d')]);
             }, []));
 
             $orders = Order::whereNotIn('status', ['cancelled', 'failed'])->where(
-                'created_at', '>=', Carbon::now()->subDays(7)->startOfDay()
+                'created_at', '>=', Carbon::now()->subDays(Carbon::DAYS_PER_WEEK)->startOfDay()
             )->get()->groupBy(function ($order) {
                 return $order->created_at->format('m-d');
             })->map(function ($group) {

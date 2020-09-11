@@ -43,7 +43,7 @@ class TransactionsController extends Controller
                 [$order, $request->amount ? (float) $request->amount : null]
             );
         } catch (Throwable $e) {
-            return Response::json(['message' => $e->getMessage()], 400);
+            return Response::json(['message' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         return Response::json($transaction);

@@ -28,7 +28,7 @@ class DownloadController extends Controller
                 );
             }, basename($url));
         } catch (DecryptException $e) {
-            return response(__('Invalid URL'), 403);
+            return response(__('Invalid URL'), Response::HTTP_FORBIDDEN);
         }
     }
 }

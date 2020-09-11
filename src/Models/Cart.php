@@ -15,6 +15,10 @@ class Cart extends Model implements Discountable, Shippable
 {
     use Addressable, Itemable;
 
+    public const TOKEN_BYTES = 40;
+
+    public const EXPIRE_DAYS = 3;
+
     /**
      * The "booted" method of the model.
      *
@@ -23,7 +27,7 @@ class Cart extends Model implements Discountable, Shippable
     protected static function booted(): void
     {
         static::creating(function (Cart $cart) {
-            $cart->token = Str::random(40);
+            $cart->token = Str::random(Cart::TOKEN_BYTES);
         });
 
         static::deleting(function (Cart $cart) {
@@ -69,7 +73,7 @@ class Cart extends Model implements Discountable, Shippable
     public function scopeExpired(Builder $query): Builder
     {
         return $query->whereNull('user_id')->where(
-            'updated_at', '<', Carbon::now()->subDays(3)
+            'updated_at', '<', Carbon::now()->subDays(self::EXPIRE_DAYS)
         );
     }
 }
